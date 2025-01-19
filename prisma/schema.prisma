@@ -1,0 +1,181 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Categories {
+  id                  Int                   @id @default(autoincrement())
+  name                String
+  createdAt           DateTime              @default(now())
+  CompaniesCategories CompaniesCategories[]
+  UsersCategories     UsersCategories[]
+}
+
+model Companies {
+  id                  Int                   @id @default(autoincrement())
+  name                String
+  email               String                @unique
+  createdAt           DateTime              @default(now())
+  country             String
+  city                String
+  street              String
+  userId              Int
+  isVerified          Boolean               @default(false)
+  Users               Users                 @relation(fields: [userId], references: [id])
+  CompaniesCategories CompaniesCategories[]
+  Events              Events[]
+  News                News[]
+  PromoCode           PromoCode[]
+}
+
+model CompaniesCategories {
+  id         Int        @id @default(autoincrement())
+  categoryId Int
+  companyId  Int
+  addedAt    DateTime   @default(now())
+  Categories Categories @relation(fields: [categoryId], references: [id])
+  Companies  Companies  @relation(fields: [companyId], references: [id])
+}
+
+model Events {
+  id                  Int           @id @default(autoincrement())
+  status              String        @default("active")
+  eventImg            String
+  name                String
+  ticket_price        Float
+  date                DateTime
+  duration_in_minutes Int
+  start_time          DateTime
+  description         String
+  place_of_event      String
+  country             String
+  city                String
+  street              String
+  number_of_seats     Int
+  companyId           Int
+  Companies           Companies     @relation(fields: [companyId], references: [id])
+  EventsTypes         EventsTypes[]
+  OrderTicket         OrderTicket[]
+  Places              Places[]
+  PromoCode           PromoCode[]
+}
+
+model EventsTypes {
+  id                     Int                  @id @default(autoincrement())
+  typeOfEventsActivityId Int
+  eventId                Int
+  Events                 Events               @relation(fields: [eventId], references: [id])
+  TypeOfEventsActivity   TypeOfEventsActivity @relation(fields: [typeOfEventsActivityId], references: [id])
+}
+
+model News {
+  id               Int                @id @default(autoincrement())
+  title            String
+  content          String
+  newsImg          String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime?
+  companyId        Int
+  Companies        Companies          @relation(fields: [companyId], references: [id])
+  NewsSubscription NewsSubscription[]
+}
+
+model NewsSubscription {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  getEmail  Boolean  @default(true)
+  userId    Int
+  newsId    Int
+  News      News     @relation(fields: [newsId], references: [id])
+  Users     Users    @relation(fields: [userId], references: [id])
+}
+
+model OrderPlaces {
+  id            Int         @id @default(autoincrement())
+  orderTicketId Int
+  placeId       Int
+  OrderTicket   OrderTicket @relation(fields: [orderTicketId], references: [id])
+  Places        Places      @relation(fields: [placeId], references: [id])
+}
+
+model OrderTicket {
+  id                Int           @id @default(autoincrement())
+  totalPrice        Float
+  createdAt         DateTime      @default(now())
+  isPaid            Boolean       @default(false)
+  eventId           Int
+  userId            Int
+  showParticipation Boolean       @default(true)
+  OrderPlaces       OrderPlaces[]
+  Events            Events        @relation(fields: [eventId], references: [id])
+  Users             Users         @relation(fields: [userId], references: [id])
+}
+
+model Places {
+  id          Int           @id @default(autoincrement())
+  row         Int
+  seatNumber  Int
+  eventId     Int
+  OrderPlaces OrderPlaces[]
+  Events      Events        @relation(fields: [eventId], references: [id])
+}
+
+model PromoCode {
+  id                  Int       @id @default(autoincrement())
+  promoCode           String    @unique
+  discount_percentage Int
+  createdAt           DateTime  @default(now())
+  expiration          DateTime
+  minOrderPrice       Float?
+  description         String
+  companyId           Int
+  eventId             Int?
+  Companies           Companies @relation(fields: [companyId], references: [id])
+  Events              Events?   @relation(fields: [eventId], references: [id])
+}
+
+model Roles {
+  id    Int     @id @default(autoincrement())
+  name  String  @unique
+  Users Users[]
+}
+
+model TypeOfEventsActivity {
+  id          Int           @id @default(autoincrement())
+  name        String
+  createdAt   DateTime      @default(now())
+  EventsTypes EventsTypes[]
+}
+
+model Users {
+  id                Int                @id @default(autoincrement())
+  userImg           String?
+  firstName         String
+  lastName          String
+  password          String
+  email             String             @unique
+  createdAt         DateTime           @default(now())
+  accountImg        String?
+  lastLogIn         DateTime?          @db.Timestamp(6)
+  isVerified        Boolean            @default(false)
+  verificationToken String?
+  roleId            Int
+  Companies         Companies[]
+  NewsSubscription  NewsSubscription[]
+  OrderTicket       OrderTicket[]
+  Roles             Roles              @relation(fields: [roleId], references: [id])
+  UsersCategories   UsersCategories[]
+}
+
+model UsersCategories {
+  id         Int        @id @default(autoincrement())
+  userId     Int
+  categoryId Int
+  addedAt    DateTime   @default(now())
+  Categories Categories @relation(fields: [categoryId], references: [id])
+  Users      Users      @relation(fields: [userId], references: [id])
+}
