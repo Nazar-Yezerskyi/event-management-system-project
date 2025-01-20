@@ -1,0 +1,1 @@
+import {IsNotEmpty, IsNumber } from 'class-validator';export class AddCategoryToCompanyDto {  @IsNumber()  @IsNotEmpty()  companyId: number;  @IsNumber()  @IsNotEmpty()  categoryId: number;}
