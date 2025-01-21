@@ -7,6 +7,11 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { RoleModule } from './role/role.module';
+import { CompanyModule } from './company/company.module';
+import { CategoryModule } from './category/category.module';
+import { CompanyCategoriesModule } from './company-categories/company-categories.module';
+import { UserCategoriesModule } from './user-categories/user-categories.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true}),
@@ -28,7 +33,7 @@ import { RoleModule } from './role/role.module';
         },
       }),
     }),
-    PrismaModule, UserModule, AuthModule, RoleModule],
+    PrismaModule, UserModule, AuthModule, RoleModule, CompanyModule, CategoryModule, CompanyCategoriesModule, UserCategoriesModule],
   controllers: [AppController],
   providers: [AppService],
 })
