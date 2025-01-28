@@ -1,15 +1,21 @@
-import { ForbiddenException, Injectable, NotFoundException, Query } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable, NotFoundException, Query, forwardRef } from '@nestjs/common';
 import { CreateCompanyDto } from './dtos/create-company.dto';
 import { UpdateCompanyDto } from './dtos/update-company.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { MailerService } from '@nestjs-modules/mailer';
+import { UserService } from 'src/user/user.service';
+import { RequestsService } from 'src/requests/requests.service';
+import { RequestsType } from 'src/enums/requests-type.enum';
 
 
 @Injectable()
 export class CompanyService {
     constructor(
         private prisma: PrismaService,
-        private mailerService: MailerService
+        private mailerService: MailerService,
+        private userService: UserService,
+        @Inject(forwardRef(() => RequestsService))
+        private requestsService: RequestsService
     ){}
 
     async findCompanyByCategories(categories: string[]){
@@ -44,6 +50,14 @@ export class CompanyService {
                         Categories: true
                     } 
                 },
+            }
+        })
+        return company
+    }
+    async findCompany(id: number){
+        const company = await this.prisma.companies.findUnique({
+            where:{
+                id
             }
         })
         return company
@@ -107,6 +121,7 @@ export class CompanyService {
                 userId
             }
         })
+        await this.requestsService.createRequest(createCompany,`Comapny: ${createCompany.name}, email ${companyData.email}`,userId, RequestsType.VERIFYCOMPANY)
         return createCompany
     }
 
@@ -180,5 +195,19 @@ export class CompanyService {
             }
         })
         return deletedCompany
+    }
+
+    async findCompanyByUser(userId: number){
+        const findUser = await this.userService.findOneUser(userId);
+        if(!findUser){
+            throw new NotFoundException('User not found')
+        }
+        const findCompany = await this.prisma.companies.findFirst({
+            where:{
+                userId: findUser.id,
+                isVerified: true
+            }
+        })
+        return findCompany
     }
 }

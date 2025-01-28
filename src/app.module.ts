@@ -11,6 +11,7 @@ import { CompanyModule } from './company/company.module';
 import { CategoryModule } from './category/category.module';
 import { CompanyCategoriesModule } from './company-categories/company-categories.module';
 import { UserCategoriesModule } from './user-categories/user-categories.module';
+import { RequestsModule } from './requests/requests.module';
 
 @Module({
   imports: [
@@ -33,7 +34,7 @@ import { UserCategoriesModule } from './user-categories/user-categories.module';
         },
       }),
     }),
-    PrismaModule, UserModule, AuthModule, RoleModule, CompanyModule, CategoryModule, CompanyCategoriesModule, UserCategoriesModule],
+    PrismaModule, UserModule, AuthModule, RoleModule, CompanyModule, CategoryModule, CompanyCategoriesModule, UserCategoriesModule, RequestsModule],
   controllers: [AppController],
   providers: [AppService],
 })
