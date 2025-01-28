@@ -12,6 +12,12 @@ import { CategoryModule } from './category/category.module';
 import { CompanyCategoriesModule } from './company-categories/company-categories.module';
 import { UserCategoriesModule } from './user-categories/user-categories.module';
 import { RequestsModule } from './requests/requests.module';
+import { EventsModule } from './events/events.module';
+import { TypeOfEventsActivityModule } from './type-of-events-activity/type-of-events-activity.module';
+import { EventsTypeModule } from './events-type/events-type.module';
+import { NewsModule } from './news/news.module';
+import { NewsSubscriptionModule } from './news-subscription/news-subscription.module';
+import { PromoCodesModule } from './promo-codes/promo-codes.module';
 
 @Module({
   imports: [
