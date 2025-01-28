@@ -29,7 +29,9 @@ model Companies {
   CompaniesCategories CompaniesCategories[]
   Events              Events[]
   News                News[]
-  PromoCode           PromoCode[]
+  NewsSubscription    NewsSubscription[]
+  PromoCodes PromoCodes[]
+  Requests Requests[]
 }
 
 model CompaniesCategories {
@@ -61,7 +63,7 @@ model Events {
   EventsTypes         EventsTypes[]
   OrderTicket         OrderTicket[]
   Places              Places[]
-  PromoCode           PromoCode[]
+  PromoCodes PromoCodes[]
 }
 
 model EventsTypes {
@@ -73,25 +75,24 @@ model EventsTypes {
 }
 
 model News {
-  id               Int                @id @default(autoincrement())
-  title            String
-  content          String
-  newsImg          String?
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime?
-  companyId        Int
-  Companies        Companies          @relation(fields: [companyId], references: [id])
-  NewsSubscription NewsSubscription[]
+  id        Int       @id @default(autoincrement())
+  title     String
+  content   String
+  newsImg   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+  companyId Int
+  Companies Companies @relation(fields: [companyId], references: [id])
 }
 
 model NewsSubscription {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  getEmail  Boolean  @default(true)
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  getEmail  Boolean   @default(true)
   userId    Int
-  newsId    Int
-  News      News     @relation(fields: [newsId], references: [id])
-  Users     Users    @relation(fields: [userId], references: [id])
+  companyId Int
+  Companies Companies @relation(fields: [companyId], references: [id])
+  Users     Users     @relation(fields: [userId], references: [id])
 }
 
 model OrderPlaces {
@@ -122,20 +123,6 @@ model Places {
   eventId     Int
   OrderPlaces OrderPlaces[]
   Events      Events        @relation(fields: [eventId], references: [id])
-}
-
-model PromoCode {
-  id                  Int       @id @default(autoincrement())
-  promoCode           String    @unique
-  discount_percentage Int
-  createdAt           DateTime  @default(now())
-  expiration          DateTime
-  minOrderPrice       Float?
-  description         String
-  companyId           Int
-  eventId             Int?
-  Companies           Companies @relation(fields: [companyId], references: [id])
-  Events              Events?   @relation(fields: [eventId], references: [id])
 }
 
 model Roles {
@@ -169,6 +156,8 @@ model Users {
   OrderTicket       OrderTicket[]
   Roles             Roles              @relation(fields: [roleId], references: [id])
   UsersCategories   UsersCategories[]
+  createdBy Requests[] @relation("createdBy")
+  reviewdBy  Requests[] @relation("reviewdBy")
 }
 
 model UsersCategories {
@@ -178,4 +167,35 @@ model UsersCategories {
   addedAt    DateTime   @default(now())
   Categories Categories @relation(fields: [categoryId], references: [id])
   Users      Users      @relation(fields: [userId], references: [id])
+}
+model PromoCodes {
+  id               Int        @id @default(autoincrement())
+  code             String     
+  discountPercent  Float
+  maxUsages        Int?  
+  usages           Int        @default(0)
+  createdAt        DateTime   @default(now())
+  expiresAt        DateTime
+  minOrderPrice    Int?
+  description      String
+  eventId          Int?      
+  companyId        Int    
+  Companies        Companies  @relation(fields: [companyId], references: [id])
+  Events           Events?    @relation(fields: [eventId], references: [id])
+}
+
+model Requests {
+  id Int        @id @default(autoincrement())
+  type String
+  status String @default("pending")
+  companyId Int?
+  description String
+  data Json
+  createdAt DateTime   @default(now())
+  reviewdAt DateTime?
+  reviewdById Int?
+  createdById Int
+  Companies Companies?  @relation(fields: [companyId], references: [id])
+  createdBy Users @relation("createdBy",fields: [createdById], references: [id])
+  reviewdBy Users? @relation("reviewdBy",fields: [reviewdById], references: [id])
 }

@@ -37,6 +37,14 @@ export class CompanyService {
         }
         return companies
     }
+    async findCompany(id: number){
+        const company = await this.prisma.companies.findUnique({
+            where:{
+                id
+            }
+        })
+        return company
+    }
     
     async getCompanyInfo(id: number){
         const company = await this.prisma.companies.findUnique({
@@ -209,5 +217,14 @@ export class CompanyService {
             }
         })
         return findCompany
+    }
+
+    async findCompanyByName(name: string){
+        const company = await this.prisma.companies.findFirst({
+            where:{
+                name
+            }
+        })
+        return company;
     }
 }

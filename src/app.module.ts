@@ -41,6 +41,7 @@ import { PromoCodesModule } from './promo-codes/promo-codes.module';
       }),
     }),
     PrismaModule, UserModule, AuthModule, RoleModule, CompanyModule, CategoryModule, CompanyCategoriesModule, UserCategoriesModule, RequestsModule],
+    PrismaModule, UserModule, AuthModule, RoleModule, CompanyModule, CategoryModule, CompanyCategoriesModule, UserCategoriesModule, EventsModule, TypeOfEventsActivityModule, EventsTypeModule, NewsModule, NewsSubscriptionModule, PromoCodesModule],
   controllers: [AppController],
   providers: [AppService],
 })
