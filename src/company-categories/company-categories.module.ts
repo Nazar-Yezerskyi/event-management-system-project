@@ -6,6 +6,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { CompanyModule } from 'src/company/company.module';
 import { CategoryModule } from 'src/category/category.module';
 
+
 @Module({
   imports: [PrismaModule, JwtModule,CompanyModule, CategoryModule],  
   controllers: [CompanyCategoriesController],

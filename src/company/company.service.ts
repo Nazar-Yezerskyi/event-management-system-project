@@ -4,6 +4,8 @@ import { UpdateCompanyDto } from './dtos/update-company.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { MailerService } from '@nestjs-modules/mailer';
 import { UserService } from 'src/user/user.service';
+import { RequestsService } from 'src/requests/requests.service';
+import { RequestsType } from 'src/enums/requests-type.enum';
 
 
 @Injectable()
@@ -11,7 +13,9 @@ export class CompanyService {
     constructor(
         private prisma: PrismaService,
         private mailerService: MailerService,
-        private userService: UserService
+        private userService: UserService,
+        @Inject(forwardRef(() => RequestsService))
+        private requestsService: RequestsService
     ){}
 
     async findCompanyByCategories(categories: string[]){
@@ -54,6 +58,14 @@ export class CompanyService {
                         Categories: true
                     } 
                 },
+            }
+        })
+        return company
+    }
+    async findCompany(id: number){
+        const company = await this.prisma.companies.findUnique({
+            where:{
+                id
             }
         })
         return company
@@ -117,6 +129,7 @@ export class CompanyService {
                 userId
             }
         })
+        await this.requestsService.createRequest(createCompany,`Comapny: ${createCompany.name}, email ${companyData.email}`,userId, RequestsType.VERIFYCOMPANY)
         return createCompany
     }
 

@@ -8,7 +8,7 @@ export class CompanyCategoriesService {
     constructor(
         private prisma: PrismaService,
         private companyService: CompanyService,
-        private categoryService: CategoryService
+        private categoryService: CategoryService,
         ){}
 
 
@@ -76,4 +76,5 @@ export class CompanyCategoriesService {
 
         return deletedCompanyCategory;
     }
+
 }
