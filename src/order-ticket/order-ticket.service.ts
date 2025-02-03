@@ -1,4 +1,5 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { MailerService } from '@nestjs-modules/mailer';
+import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException, forwardRef } from '@nestjs/common';
 import { EventsService } from 'src/events/events.service';
 import { OrderPlacesService } from 'src/order-places/order-places.service';
 import { PaymentService } from 'src/payment/payment.service';
@@ -12,7 +13,9 @@ export class OrderTicketService {
         private eventsService: EventsService,
         private orderPlacesService: OrderPlacesService,
         private promoCodeService: PromoCodesService,
-        private paymentService: PaymentService
+        private mailerService: MailerService,
+        @Inject(forwardRef(() => PaymentService))
+        private paymentService: PaymentService,
     ){}
     async findAllUserTickets(userId: number){
         const tickets = await this.prisma.orderTicket.findMany({
@@ -102,7 +105,15 @@ export class OrderTicketService {
                 id: ticketId
             },
             include:{
-                OrderPlaces:true
+                OrderPlaces:{
+                    include:{
+                        Places:{
+                            select:{
+                                seatNumber:true
+                            }
+                        }
+                    }
+                }
             }
         })
         return find
@@ -146,6 +157,29 @@ export class OrderTicketService {
             }
         })
         return updatedShowParticipation
+    }
+
+    async sendTicketDetails(eventId: number, userEmail: string, ticketId: number){
+        const findEvent = await this.eventsService.findOneEvent(eventId)
+        const findTicket = await this.findTicket(ticketId)
+        console.log(findTicket.OrderPlaces)
+        const seats = findTicket.OrderPlaces.map((place =>(place.Places.seatNumber))).join(',')
+        await this.mailerService.sendMail({
+            to: userEmail,
+            subject: 'Ticket Details',
+            text: 
+                `Ticket №${findTicket.id}
+        
+                Event: ${findEvent.name}
+        
+                Ordered places: ${seats}
+        
+                Date: ${findEvent.date.toISOString().split('T')[0]}
+                Start time: ${findEvent.start_time.toISOString().split('T')[1].slice(0,5)}
+        
+                Where? - ${findEvent.country}, ${findEvent.city}, ${findEvent.street}`
+            .trim(),
+        });
     }
     
 }
