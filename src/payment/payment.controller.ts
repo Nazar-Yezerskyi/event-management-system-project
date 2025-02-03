@@ -1,6 +1,7 @@
-import { Body, Controller, Post, Request } from '@nestjs/common';
+import { Body, Controller, Post, RawBodyRequest, Req } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { CreatePaymentIntentDto } from './dtos/create-payment-intent.dto';
+import { PaymentStatus } from 'src/enums/payment-status.enum';
 
 @Controller('payment')
 export class PaymentController {
@@ -20,20 +21,23 @@ export class PaymentController {
     }
     
     @Post('webhook')
-    async handleStripeWebhook(@Body() body: any, @Request() req: any) {
-        const sig = req.headers['stripe-signature'];
-        const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-        let event;
-        event = this.paymentService.getStripe().webhooks.constructEvent(body, sig, endpointSecret);
-
-        if (event.type === 'payment_intent.succeeded') {
-            const paymentIntent = event.data.object;
-            await this.paymentService.updatePaymentStatus(paymentIntent.id, 'succeeded');
-        } else if (event.type === 'payment_intent.payment_failed') {
-            const paymentIntent = event.data.object;
-            await this.paymentService.updatePaymentStatus(paymentIntent.id, 'failed');
+    async handleStripeWebhook(@Req() req: RawBodyRequest<Request>) {
+      const sig = req.headers['stripe-signature'];
+      const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+      const object = JSON.parse(req.rawBody.toString())
+      console.log(object)
+      let event;
+      try {
+        event = this.paymentService.getStripe().webhooks.constructEvent(req.rawBody, sig, endpointSecret);
+        if (event.data.object.status === PaymentStatus.SUCCEEDED) {
+          const paymentIntent = event.data.object;
+          return await this.paymentService.updatePaymentStatus(paymentIntent.metadata.paymentIntentId, PaymentStatus.SUCCEEDED, paymentIntent.receipt_url);
+        } else {
+          console.log('Unhandled event type:', event.type);
         }
-
-        return { status: 'success' };
+      } catch (error) {
+        console.error('Error processing webhook event:', error);
+        throw new Error('Webhook processing failed');
+      }
     }
 }

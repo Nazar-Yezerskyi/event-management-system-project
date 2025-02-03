@@ -1,8 +1,10 @@
 import { MailerService } from '@nestjs-modules/mailer';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException, forwardRef } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { OrderTicketService } from 'src/order-ticket/order-ticket.service';
 import { UserService } from 'src/user/user.service';
 import Stripe from 'stripe';
+import { PaymentStatus } from 'src/enums/payment-status.enum';
 
 @Injectable()
 export class PaymentService {
@@ -11,10 +13,15 @@ export class PaymentService {
     constructor(
       private prisma:PrismaService,
       private mailerService: MailerService,
-      private userService: UserService
+      private userService: UserService,
+      @Inject(forwardRef(() => OrderTicketService))
+      private orderTiketService: OrderTicketService
     ) {
         const stripeSecretKey = process.env.STRIPE_SECRET_KEY
-        this.stripe = new Stripe(stripeSecretKey);
+        //@ts-ignore
+        this.stripe = new Stripe(stripeSecretKey, {
+          apiVersion: '2025-01-27.acacia',  
+        });
     }
 
     getStripe(){
@@ -36,7 +43,7 @@ export class PaymentService {
   
       const paymentData = await this.prisma.payment.create({
         data: {
-          amount: amount,
+          amount: amount * 100,
           paymentMethod: 'card',
           currency,
           status: paymentIntent.status,
@@ -80,6 +87,11 @@ export class PaymentService {
               },
           ],
           mode: 'payment',
+          payment_intent_data:{
+            metadata:{
+                paymentIntentId
+            }
+          },
           success_url: `https://example.com/success?payment_intent=${paymentIntentId}`,
           cancel_url: `https://example.com/cancel?payment_intent=${paymentIntentId}`,
           metadata: {
@@ -107,12 +119,16 @@ export class PaymentService {
     const find = await this.prisma.payment.findFirst({
       where:{
         paymentIntentId
+      },
+      include:{
+        User: true,
+        OrderTicket: true
       }
     })
     return find;
   }
 
-  async updatePaymentStatus(paymentId: string, status: string){
+  async updatePaymentStatus(paymentId: string, status: string, receipt: string){
     const findRecord = await this.findRecordByPaymentIntent(paymentId)
     if(!findRecord){
       throw new NotFoundException('Record not found')
@@ -125,6 +141,19 @@ export class PaymentService {
         status
       }
     })
+    if( status === PaymentStatus.SUCCEEDED){
+        console.log(findRecord.id)
+        await this.sendPaymentReceipt(receipt, findRecord.User.email)
+        await this.orderTiketService.sendTicketDetails(findRecord.OrderTicket.eventId,findRecord.User.email,findRecord.OrderTicket.id)
+    }
     return updateStatus
+  }
+
+  async sendPaymentReceipt(receipt: string, userEmail:string){
+    await this.mailerService.sendMail({
+        to: userEmail,
+        subject:'Payment receipt',
+        text: `click to get receipt: ${receipt}`
+    })
   }
 }
