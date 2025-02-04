@@ -181,5 +181,72 @@ export class OrderTicketService {
             .trim(),
         });
     }
+
+    async countSoldTicketByCompany(companyId:number, start_date?: string, end_date?: string){
+        let startDate: Date
+        let endDate: Date
+        if(start_date){
+            startDate = new Date(start_date)
+        }
+        if(end_date){
+            endDate = new Date(end_date)
+        }
+        const orderPlaceCount = await this.prisma.events.findMany({
+            where: {
+              companyId: companyId, 
+              date:{
+                gte: startDate,
+                lte: endDate
+              }
+            },
+            include: {
+              OrderTicket: {
+                include: {
+                  OrderPlaces: true,
+                },
+              },
+            },
+          }).then(events => {
+            return events.map(event => ({
+              eventId: event.id,
+              orderPlaceCount: event.OrderTicket.reduce((count, orderTicket) => count + orderTicket.OrderPlaces.length, 0),
+            }));
+          });
+          
+         return orderPlaceCount;
+    }
+    async countSoldTicketsByEvent(eventId: number){
+        const findEvent = await this.eventsService.findOneEvent(eventId)
+        if(!findEvent){
+            throw new NotFoundException('Event not found')
+        }
+        const countTickets = await this.prisma.orderPlaces.count({
+            where:{
+               OrderTicket:{
+                eventId,
+               }
+            }
+        })
+        return countTickets
+    }
+
+    async calculatePromoLoss(eventId: number){
+        const appliedPromoCodes = await this.prisma.orderTicket.aggregate({
+            where:{
+                eventId,
+            },
+            _count:{
+                promoCode: true
+            },
+            _sum:{
+                totalPrice: true
+            },
+
+            
+        })
+        const appliedPromoCodesValue = appliedPromoCodes._sum.totalPrice
+        const number_of_using_promo = appliedPromoCodes._count.promoCode
+        return {appliedPromoCodesValue, number_of_using_promo}
+    }
     
 }
