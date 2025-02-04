@@ -164,6 +164,9 @@ model Users {
   reviewdBy         Requests[]         @relation("reviewdBy")
   Roles             Roles              @relation(fields: [roleId], references: [id])
   UsersCategories   UsersCategories[]
+  createdBy Requests[] @relation("createdBy")
+  reviewdBy  Requests[] @relation("reviewdBy")
+  Payment Payment[]
 }
 
 model UsersCategories {

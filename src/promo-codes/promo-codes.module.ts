@@ -9,6 +9,7 @@ import { JwtModule } from '@nestjs/jwt';
 @Module({
   imports: [PrismaModule, CompanyModule, EventsModule, JwtModule],
   controllers: [PromoCodesController],
-  providers: [PromoCodesService]
+  providers: [PromoCodesService],
+  exports: [PromoCodesService]
 })
 export class PromoCodesModule {}
