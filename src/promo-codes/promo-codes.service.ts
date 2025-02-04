@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CompanyService } from 'src/company/company.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePromoCodeDto } from './dtos/create-promo-code.dto';
@@ -103,4 +103,47 @@ export class PromoCodesService {
         })
         return deletedPromoCode;
     }
+
+    async updatePromoCodeUsages(promoCodeId: number){
+        const updatedPromoCode = await this.prisma.promoCodes.update({
+            where:{
+                id: promoCodeId
+            },
+            data:{
+                usages: {
+                    increment: 1
+                }
+            }
+        })
+        return updatedPromoCode
+    }
+
+    async findPromoCodeByName(promoCode: string, companyId: number){
+        const find = await this.prisma.promoCodes.findFirst({
+            where:{
+                code: promoCode,
+                companyId
+            }
+        })
+        return find
+    }
+    async validatePromoCode(promoCode: string, event: any, totalPrice: number){
+        const findPromo = await this.findPromoCodeByName(promoCode, event.companyId);
+        if (!findPromo){
+            throw new BadRequestException('Invalid promo code');
+        }
+        if (findPromo.eventId && findPromo.eventId !== event.id) {
+            throw new BadRequestException('This promo code is not valid for this event');
+        }
+        if (findPromo.minOrderPrice && totalPrice < findPromo.minOrderPrice) {
+            throw new BadRequestException(`The minimum order price for this promo code is ${findPromo.minOrderPrice}`);
+        }
+        if (findPromo.maxUsages !== null && findPromo.usages >= findPromo.maxUsages) {
+            throw new BadRequestException(`This promo code has reached its maximum usage limit`);
+        }
+    
+        await this.updatePromoCodeUsages(findPromo.id);
+        return totalPrice * (1 - findPromo.discountPercent / 100);
+    }
+    
 }

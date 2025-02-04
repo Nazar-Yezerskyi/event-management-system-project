@@ -111,9 +111,11 @@ model OrderTicket {
   eventId           Int
   userId            Int
   showParticipation Boolean       @default(true)
+  promoCode         String?
   OrderPlaces       OrderPlaces[]
   Events            Events        @relation(fields: [eventId], references: [id])
   Users             Users         @relation(fields: [userId], references: [id])
+  Payment Payment[]
 }
 
 model Places {
@@ -158,6 +160,7 @@ model Users {
   UsersCategories   UsersCategories[]
   createdBy Requests[] @relation("createdBy")
   reviewdBy  Requests[] @relation("reviewdBy")
+  Payment Payment[]
 }
 
 model UsersCategories {
@@ -198,4 +201,19 @@ model Requests {
   Companies Companies?  @relation(fields: [companyId], references: [id])
   createdBy Users @relation("createdBy",fields: [createdById], references: [id])
   reviewdBy Users? @relation("reviewdBy",fields: [reviewdById], references: [id])
+}
+
+model Payment {
+  id              Int      @id @default(autoincrement())
+  orderTicketId   Int
+  paymentMethod   String
+  amount          Int
+  currency        String 
+  status          String @default("in progress")
+  paymentIntentId String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime?
+  userId          Int
+  User Users @relation(fields: [userId], references:[id])
+  OrderTicket OrderTicket @relation(fields: [orderTicketId], references:[id])
 }
