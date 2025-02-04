@@ -25,13 +25,14 @@ model Companies {
   street              String
   userId              Int
   isVerified          Boolean               @default(false)
+  Comments            Comments[]
   Users               Users                 @relation(fields: [userId], references: [id])
   CompaniesCategories CompaniesCategories[]
   Events              Events[]
   News                News[]
   NewsSubscription    NewsSubscription[]
-  PromoCodes PromoCodes[]
-  Requests Requests[]
+  PromoCodes          PromoCodes[]
+  Requests            Requests[]
 }
 
 model CompaniesCategories {
@@ -59,11 +60,12 @@ model Events {
   street              String
   number_of_seats     Int
   companyId           Int
+  Comments            Comments[]
   Companies           Companies     @relation(fields: [companyId], references: [id])
   EventsTypes         EventsTypes[]
   OrderTicket         OrderTicket[]
   Places              Places[]
-  PromoCodes PromoCodes[]
+  PromoCodes          PromoCodes[]
 }
 
 model EventsTypes {
@@ -111,9 +113,11 @@ model OrderTicket {
   eventId           Int
   userId            Int
   showParticipation Boolean       @default(true)
+  promoCode         String?
   OrderPlaces       OrderPlaces[]
   Events            Events        @relation(fields: [eventId], references: [id])
   Users             Users         @relation(fields: [userId], references: [id])
+  Payment           Payment[]
 }
 
 model Places {
@@ -151,13 +155,15 @@ model Users {
   isVerified        Boolean            @default(false)
   verificationToken String?
   roleId            Int
+  Comments          Comments[]
   Companies         Companies[]
   NewsSubscription  NewsSubscription[]
   OrderTicket       OrderTicket[]
+  Payment           Payment[]
+  createdBy         Requests[]         @relation("createdBy")
+  reviewdBy         Requests[]         @relation("reviewdBy")
   Roles             Roles              @relation(fields: [roleId], references: [id])
   UsersCategories   UsersCategories[]
-  createdBy Requests[] @relation("createdBy")
-  reviewdBy  Requests[] @relation("reviewdBy")
 }
 
 model UsersCategories {
@@ -168,34 +174,64 @@ model UsersCategories {
   Categories Categories @relation(fields: [categoryId], references: [id])
   Users      Users      @relation(fields: [userId], references: [id])
 }
+
 model PromoCodes {
-  id               Int        @id @default(autoincrement())
-  code             String     
-  discountPercent  Float
-  maxUsages        Int?  
-  usages           Int        @default(0)
-  createdAt        DateTime   @default(now())
-  expiresAt        DateTime
-  minOrderPrice    Int?
-  description      String
-  eventId          Int?      
-  companyId        Int    
-  Companies        Companies  @relation(fields: [companyId], references: [id])
-  Events           Events?    @relation(fields: [eventId], references: [id])
+  id              Int       @id @default(autoincrement())
+  code            String
+  discountPercent Float
+  maxUsages       Int?
+  usages          Int       @default(0)
+  createdAt       DateTime  @default(now())
+  expiresAt       DateTime
+  eventId         Int?
+  companyId       Int
+  description     String
+  minOrderPrice   Int?
+  Companies       Companies @relation(fields: [companyId], references: [id])
+  Events          Events?   @relation(fields: [eventId], references: [id])
 }
 
 model Requests {
-  id Int        @id @default(autoincrement())
-  type String
-  status String @default("pending")
-  companyId Int?
-  description String
-  data Json
-  createdAt DateTime   @default(now())
-  reviewdAt DateTime?
+  id          Int        @id @default(autoincrement())
+  type        String
+  status      String     @default("pending")
+  companyId   Int?
+  data        Json
+  createdAt   DateTime   @default(now())
+  reviewdAt   DateTime?
   reviewdById Int?
   createdById Int
-  Companies Companies?  @relation(fields: [companyId], references: [id])
-  createdBy Users @relation("createdBy",fields: [createdById], references: [id])
-  reviewdBy Users? @relation("reviewdBy",fields: [reviewdById], references: [id])
+  description String
+  Companies   Companies? @relation(fields: [companyId], references: [id])
+  createdBy   Users      @relation("createdBy", fields: [createdById], references: [id])
+  reviewdBy   Users?     @relation("reviewdBy", fields: [reviewdById], references: [id])
+}
+
+model Comments {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  addedAt   DateTime  @default(now())
+  image     String?
+  updatedAt DateTime?
+  companyId Int
+  eventId   Int?
+  content   String
+  Companies Companies @relation(fields: [companyId], references: [id])
+  Events    Events?   @relation(fields: [eventId], references: [id])
+  Users     Users     @relation(fields: [userId], references: [id])
+}
+
+model Payment {
+  id              Int         @id @default(autoincrement())
+  orderTicketId   Int
+  paymentMethod   String
+  amount          Int
+  currency        String
+  status          String      @default("in progress")
+  paymentIntentId String
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime?
+  userId          Int
+  OrderTicket     OrderTicket @relation(fields: [orderTicketId], references: [id])
+  Users           Users       @relation(fields: [userId], references: [id])
 }

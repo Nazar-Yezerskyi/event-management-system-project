@@ -18,6 +18,8 @@ import { EventsTypeModule } from './events-type/events-type.module';
 import { NewsModule } from './news/news.module';
 import { NewsSubscriptionModule } from './news-subscription/news-subscription.module';
 import { PromoCodesModule } from './promo-codes/promo-codes.module';
+import { CommentsModule } from './comments/comments.module';
+import { StatisticsModule } from './statistics/statistics.module';
 
 @Module({
   imports: [
@@ -40,8 +42,8 @@ import { PromoCodesModule } from './promo-codes/promo-codes.module';
         },
       }),
     }),
-    PrismaModule, UserModule, AuthModule, RoleModule, CompanyModule, CategoryModule, CompanyCategoriesModule, UserCategoriesModule, RequestsModule],
-    PrismaModule, UserModule, AuthModule, RoleModule, CompanyModule, CategoryModule, CompanyCategoriesModule, UserCategoriesModule, EventsModule, TypeOfEventsActivityModule, EventsTypeModule, NewsModule, NewsSubscriptionModule, PromoCodesModule],
+    
+    PrismaModule, UserModule, AuthModule, RoleModule, CompanyModule, CategoryModule, CompanyCategoriesModule, UserCategoriesModule, EventsModule, TypeOfEventsActivityModule, EventsTypeModule, NewsModule, NewsSubscriptionModule, PromoCodesModule,RequestsModule, CommentsModule, StatisticsModule],
   controllers: [AppController],
   providers: [AppService],
 })
