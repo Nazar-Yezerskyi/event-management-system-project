@@ -57,6 +57,9 @@ export class OrderTicketService {
         const tickets = await this.prisma.orderTicket.findMany({
             where:{
                 eventId
+            },
+            include: {
+                Users: true
             }
         })
         return tickets

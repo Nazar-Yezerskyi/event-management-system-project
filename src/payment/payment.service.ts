@@ -121,7 +121,7 @@ export class PaymentService {
         paymentIntentId
       },
       include:{
-        User: true,
+        Users: true,
         OrderTicket: true
       }
     })
@@ -143,8 +143,8 @@ export class PaymentService {
     })
     if( status === PaymentStatus.SUCCEEDED){
         console.log(findRecord.id)
-        await this.sendPaymentReceipt(receipt, findRecord.User.email)
-        await this.orderTiketService.sendTicketDetails(findRecord.OrderTicket.eventId,findRecord.User.email,findRecord.OrderTicket.id)
+        await this.sendPaymentReceipt(receipt, findRecord.Users.email)
+        await this.orderTiketService.sendTicketDetails(findRecord.OrderTicket.eventId,findRecord.Users.email,findRecord.OrderTicket.id)
     }
     return updateStatus
   }
