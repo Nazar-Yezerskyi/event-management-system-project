@@ -11,7 +11,6 @@ import { CompanyModule } from './company/company.module';
 import { CategoryModule } from './category/category.module';
 import { CompanyCategoriesModule } from './company-categories/company-categories.module';
 import { UserCategoriesModule } from './user-categories/user-categories.module';
-import { RequestsModule } from './requests/requests.module';
 import { EventsModule } from './events/events.module';
 import { TypeOfEventsActivityModule } from './type-of-events-activity/type-of-events-activity.module';
 import { EventsTypeModule } from './events-type/events-type.module';
@@ -22,6 +21,14 @@ import { PlacesModule } from './places/places.module';
 import { OrderTicketModule } from './order-ticket/order-ticket.module';
 import { OrderPlacesModule } from './order-places/order-places.module';
 import { PaymentModule } from './payment/payment.module';
+import { FollowsModule } from './follows/follows.module';
+import { ChatsModule } from './chats/chats.module';
+import { ChatParticipantsModule } from './chat-participants/chat-participants.module';
+import { MessagesModule } from './messages/messages.module';
+import { ChatGatewayModule } from './chat-gateway/chat-gateway.module';
+import { SurveyOptionsModule } from './survey-options/survey-options.module';
+import { SurveyModule } from './survey/survey.module';
+import { SurveyResponseModule } from './survey-response/survey-response.module';
 
 @Module({
   imports: [
@@ -44,7 +51,7 @@ import { PaymentModule } from './payment/payment.module';
         },
       }),
     }),
-    PrismaModule, UserModule, AuthModule, RoleModule, CompanyModule, CategoryModule, CompanyCategoriesModule, UserCategoriesModule, EventsModule, TypeOfEventsActivityModule, EventsTypeModule, NewsModule, NewsSubscriptionModule, PromoCodesModule, PlacesModule, OrderTicketModule, OrderPlacesModule, PaymentModule],
+    PrismaModule, UserModule, AuthModule, RoleModule, CompanyModule, CategoryModule, CompanyCategoriesModule, UserCategoriesModule, EventsModule, TypeOfEventsActivityModule, EventsTypeModule, NewsModule, NewsSubscriptionModule, PromoCodesModule, PlacesModule, OrderTicketModule, OrderPlacesModule, PaymentModule, FollowsModule, ChatsModule, ChatParticipantsModule, MessagesModule, ChatGatewayModule, SurveyOptionsModule, SurveyModule, SurveyResponseModule],
   controllers: [AppController],
   providers: [AppService],
 })
