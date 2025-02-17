@@ -33,6 +33,7 @@ model Companies {
   NewsSubscription    NewsSubscription[]
   PromoCodes          PromoCodes[]
   Requests            Requests[]
+  Chats Chats[]
 }
 
 model CompaniesCategories {
@@ -143,30 +144,32 @@ model TypeOfEventsActivity {
 }
 
 model Users {
-  id                Int                @id @default(autoincrement())
-  userImg           String?
-  firstName         String
-  lastName          String
-  password          String
-  email             String             @unique
-  createdAt         DateTime           @default(now())
-  accountImg        String?
-  lastLogIn         DateTime?          @db.Timestamp(6)
-  isVerified        Boolean            @default(false)
-  verificationToken String?
-  roleId            Int
-  Comments          Comments[]
-  Companies         Companies[]
-  NewsSubscription  NewsSubscription[]
-  OrderTicket       OrderTicket[]
-  Payment           Payment[]
-  createdBy         Requests[]         @relation("createdBy")
-  reviewdBy         Requests[]         @relation("reviewdBy")
-  Roles             Roles              @relation(fields: [roleId], references: [id])
-  UsersCategories   UsersCategories[]
-  createdBy Requests[] @relation("createdBy")
-  reviewdBy  Requests[] @relation("reviewdBy")
-  Payment Payment[]
+  id                                  Int                @id @default(autoincrement())
+  userImg                             String?
+  firstName                           String
+  lastName                            String
+  password                            String
+  email                               String             @unique
+  createdAt                           DateTime           @default(now())
+  accountImg                          String?
+  lastLogIn                           DateTime?          @db.Timestamp(6)
+  isVerified                          Boolean            @default(false)
+  verificationToken                   String?
+  roleId                              Int
+  Comments                            Comments[]
+  Companies                           Companies[]
+  Follows_Follows_followedByIdToUsers Follows[]          @relation("Follows_followedByIdToUsers")
+  Follows_Follows_followingIdToUsers  Follows[]          @relation("Follows_followingIdToUsers")
+  NewsSubscription                    NewsSubscription[]
+  OrderTicket                         OrderTicket[]
+  Payment                             Payment[]
+  createdBy                           Requests[]         @relation("createdBy")
+  reviewdBy                           Requests[]         @relation("reviewdBy")
+  Roles                               Roles              @relation(fields: [roleId], references: [id])
+  UsersCategories                     UsersCategories[]
+  ChatParticipants ChatParticipants[]
+  Messages Messages[]
+  SurveyResponses SurveyResponses[]
 }
 
 model UsersCategories {
@@ -238,3 +241,75 @@ model Payment {
   OrderTicket     OrderTicket @relation(fields: [orderTicketId], references: [id])
   Users           Users       @relation(fields: [userId], references: [id])
 }
+
+model Follows {
+  id                                Int       @id @default(autoincrement())
+  followedById                      Int
+  followingId                       Int
+  status                            String    @default("pending")
+  updatedAt                         DateTime?
+  addedDate                         DateTime  @default(now())
+  Users_Follows_followedByIdToUsers Users     @relation("Follows_followedByIdToUsers", fields: [followedById], references: [id])
+  Users_Follows_followingIdToUsers  Users     @relation("Follows_followingIdToUsers", fields: [followingId], references: [id])
+}
+
+model Chats {
+  id          Int               @id @default(autoincrement())
+  name        String?
+  isActive Boolean @default(true)
+  createdAt   DateTime          @default(now())
+  createdByCompanyId Int
+  company Companies @relation(fields: [createdByCompanyId], references: [id])
+  participants ChatParticipants[]
+  messages    Messages[]
+}
+
+model ChatParticipants {
+  id       Int    @id @default(autoincrement())
+  chatId   Int
+  userId   Int
+  joinedAt DateTime @default(now())
+  chat     Chats  @relation(fields: [chatId], references: [id])
+  user     Users  @relation(fields: [userId], references: [id])
+}
+
+model Messages {
+  id        Int       @id @default(autoincrement())
+  content   String    
+  createdAt DateTime  @default(now())
+  senderId  Int       
+  chatId    Int       
+  sender    Users     @relation(fields: [senderId], references: [id])
+  chat      Chats     @relation(fields: [chatId], references: [id])
+}
+
+model Survey {
+  id Int @id @default(autoincrement())
+  name String
+  createdAt DateTime  @default(now())
+  createdByCompanyId Int
+  expiresAt DateTime?
+  showResult Boolean @default(true)
+  surveyOptions SurveyOptions[]
+  surveyResponses SurveyResponses[]
+
+}
+
+model SurveyOptions{
+  id Int @id @default(autoincrement())
+  text String
+  surveyId Int
+  Survey Survey @relation(fields: [surveyId], references: [id])
+  surveyResponses SurveyResponses[]
+}
+
+model SurveyResponses{
+  id Int @id @default(autoincrement())
+  surveyId Int
+  surveyOptionsId Int
+  userId Int
+  Survey Survey @relation(fields: [surveyId], references: [id])
+  SurveyOptions SurveyOptions @relation(fields: [surveyOptionsId], references: [id])
+  Users Users @relation(fields: [userId], references: [id])
+}
+
